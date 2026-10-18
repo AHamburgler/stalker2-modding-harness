@@ -44,6 +44,15 @@ Mostly from ImmersiveDialogue 2.0-2.1 (walk in dialogue, arms, gestures) and Imm
 - Rebinding pins inside an override (`Select Float` on our flag, rules OR'd with our flag) works but makes the
   asset a conflict magnet; frozen-interface lesson in `compatibility.md`.
 
+- **One montage per slot group, whatever `bStopAllMontages` says** (ImmersiveLooting 2026-10-18): a montage ASSET in
+  `FullBody` started with `Montage_Play(bStopAllMontages = false)` right after a paused dynamic FullBody pose table
+  stopped the table (probe: the table inactive through every test). Two offset tables cannot stack in one group;
+  live per-bone offsets need a post-process layer (`Transform (Modify) Bone` nodes bound to variables).
+- Slot groups of the player skeleton (from every player montage, `get_group_name` + `get_montage_slot_names`):
+  DefaultGroup = DefaultSlot, LeftHand, RightHand, CameraSlot, WeaponSlot, DeathSlot; ActionGroup = MainActionSlot,
+  SecondaryActionSlot, GadgetActionSlot / GadgetActionAimSlot; UpperGroup = UpperBody; FullBodyGroup = FullBody;
+  PreActionGroup = PreActionFullbodySlot; CutsceneGroup = CutsceneSlot.
+
 ## Crash families (do not retry)
 - `SetAnimInstanceClass` on the player mesh: `EXCEPTION_ACCESS_VIOLATION reading 0xa00` at once (native code keeps
   the instance it created at spawn).
