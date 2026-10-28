@@ -38,6 +38,12 @@
   actor's **String (FString) variable** from Lua (`actor.SomeString` / `:ToString()`) crashed the game inside UE4SS
   while a save loaded (ImmersiveLooting 2026-10-12): probe only bool / int / float variables; expose anything else as
   numbers (a flag, a counter, a code).
+- **ProcessEvent pre-hook parameters: read inputs only.** A UFunction's property list also holds its return value,
+  out-params and (Blueprint) locals, none of them filled in when the pre-hook runs. Walking all of them dereferenced
+  an uninitialized object pointer and crashed the game on save load (MedItemDataTest probe v0.1, 2026-10-28). Keep
+  `CPF_Parm` without `CPF_ReturnParm`, skip `CPF_OutParm` unless `CPF_ReferenceParm`, and follow an object pointer
+  only after `FUObjectArray::IndexToObject(obj->GetInternalIndex_Private())->GetUObject() == obj` (inside
+  `__try`). With that, a generic item-event logger ran through load, pickup and use without a fault.
 - UE4SS Lua limits: struct field values of game structs are opaque (`TrivialObject`, no accessor); `LoopAsync` work
   must go through `ExecuteInGameThread`; `RegisterKeyBind` twice in one process crashes (guard reloads with a global
   flag); calling anim functions from Lua crashes. Lua is fine for enumerating objects, names and zero-arg calls.

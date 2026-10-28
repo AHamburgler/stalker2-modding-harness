@@ -107,6 +107,14 @@ mod learns something about the game itself. Line numbers refer to `<kit>\bp_api_
 - The dialogue skip hint `W_SkipHintView` has native show logic (`SkipHintView` base); the BP is layout + fade only.
 - Trading opens inside the dialogue (`IsInStaticDialog` stays true) and takes UI-only input.
 - No BP-exposed API opens the PDA / inventory views directly (nothing on UIManagerEx / ViewBase / CppMediator).
+- **Inventory items are not UObjects** (MedItemDataTest probe, 2026-10-28): no object for a carried medkit exists,
+  only its assets; one native `ItemManager` object, inventory work in `GAPlayerComponent` processors
+  (`GAInventoryActionProcessor`, `GAInventoryStatusProcessor`, `GATradeActionProcessor`). Picking up and using a
+  medkit fired no item-related ProcessEvent; `Obj.OnBeforeUseItemBP(ItemUID)` did not fire (apparently only called
+  when a Blueprint implements it); `OnItemUseEnded_BP` (no parameters) did. Blueprint sees items only as an
+  `ItemUID` (`int32 uid`) and through `CppMediator.GetItemsCountInInventory(obj, SID)`.
+- `ModWorldSubsystem` can store data in the game save: `ShouldSaveData`, `OnSaveDataRequested`,
+  `SetDataForSave(InstancedStruct)`, `OnSaveDataLoaded(SaveData)` (editor Python reflection; MCM persists this way).
 
 ## PDA (ImmersivePDA research 2026-10-16; kit data + headless reads, not yet probed in game)
 - Open: `IA_OpenPDA` (P, pad Special Left; Tap + 1 s Hold triggers) and `IA_WorldMap` / `IA_Journal` / `IA_Note` in
